@@ -11,6 +11,13 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import MySQLdb
+from django.db import connection
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-oja$&8)2-h5gzt2rfu(8%8(x1rc0wr_i))_w6me+5tgq1tzb=k"
+SECRET_KEY = "django-diabetes-test-key"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,12 +38,15 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "rest_framework",
+    "rest_framework_simplejwt",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "diabetes",
 ]
 
 MIDDLEWARE = [
@@ -48,6 +58,15 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 ROOT_URLCONF = "diabetes.urls"
 
@@ -73,14 +92,45 @@ WSGI_APPLICATION = "diabetes.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DATABASE_NAME = os.getenv('DATABASE_NAME', 'default_db')
+DATABASE_USER = os.getenv('DATABASE_USER', 'root')
+DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD', '')
+DATABASE_HOST = os.getenv('DATABASE_HOST', 'localhost')
+DATABASE_PORT = os.getenv('DATABASE_PORT', '3306')
+
+
+def setup_database():
+
+    try:
+        # Connect to MySQL without specifying a database
+        db_connection = MySQLdb.connect(
+            host=DATABASE_HOST,
+            user=DATABASE_USER,
+            passwd=DATABASE_PASSWORD,
+            port=int(DATABASE_PORT)
+        )
+        cursor = db_connection.cursor()
+
+        # Create database if it doesn't exist
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DATABASE_NAME}")
+
+        # Close the connection
+        cursor.close()
+        db_connection.close()
+
+    except Exception as e:
+        print(f"Error creating database: {e}")
+
+setup_database()
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mydatabase',
-        'USER': 'myuser',
-        'PASSWORD': 'mypassword',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': DATABASE_NAME,
+        'USER': DATABASE_USER,
+        'PASSWORD': DATABASE_PASSWORD,
+        'HOST': DATABASE_HOST,
+        'PORT': DATABASE_PORT,
     }
 }
 
