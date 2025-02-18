@@ -26,7 +26,8 @@ def register(request):
         if User.objects.filter(email=email).exists():
             return JsonResponse({'error': 'Email already exists'}, status=400)
 
-        user = User.objects.create_user(
+        # creates user
+        User.objects.create_user(
             email=email,
             password=password,
             first_name=first_name,
@@ -77,7 +78,8 @@ def diagnoses(request):
 
     
         prediction_value = predict_diabetes(pregancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age)
-        
+        has_diabetes = prediction_value > 0.5
+
         diagnosis = Diagnosis.objects.create(
             user=request.user,
             pregancies=pregancies,
@@ -88,13 +90,14 @@ def diagnoses(request):
             bmi=bmi,
             diabetes_pedigree_function=diabetes_pedigree_function,
             age=age,
-            has_diabetes=prediction_value > 0.5  # Example threshold (adjust as needed)
+            has_diabetes=has_diabetes
         )
 
         return JsonResponse({
             'message': 'Diagnosis added successfully',
             'id': diagnosis.id,
-            'prediction': prediction_value
+            'prediction': prediction_value,
+            'has_diabetes': has_diabetes
         })
     
     elif request.method == 'DELETE':
@@ -105,6 +108,6 @@ def diagnoses(request):
             # Ensure the user can only delete their own diagnoses
             diagnosis = Diagnosis.objects.get(id=diagnosis_id, user=request.user)
             diagnosis.delete()
-            return JsonResponse({'message': 'Diagnosis deleted successfully'})
+            return JsonResponse({'message': 'Diagnosis deleted successfully', 'diagnosis_id': diagnosis_id})
         except Diagnosis.DoesNotExist:
             return JsonResponse({'error': 'Diagnosis not found or unauthorized'}, status=404)
