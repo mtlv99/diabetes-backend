@@ -16,15 +16,13 @@ Including another URLconf
 """
 
 from django.urls import path
-from .views import register, login, protected_view, mariadb_data
+from .views import register, login
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import patients
+from .views import diagnoses
 
 urlpatterns = [
     path('register/', register),
     path('login/', login),
-    path('protected/', protected_view),
-    path('mysql/', mariadb_data),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('patients/', patients),
+    path('diagnoses/', diagnoses),
 ]

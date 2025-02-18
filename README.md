@@ -41,7 +41,7 @@ DATABASE_PORT=3306
 ### 4. Create the database
 
 ```bash
-python manage.py makemigrations
+python manage.py makemigrations diabetes
 python manage.py migrate
 ```
 

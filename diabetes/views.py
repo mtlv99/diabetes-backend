@@ -1,25 +1,39 @@
 import json
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
-from .models import Patient
+from .models import Diagnosis
+from .services import predict_diabetes  # Import the business logic function
+
+User = get_user_model()  # Use the custom user model
 
 # Register User
 @csrf_exempt
 def register(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        username = data.get('username')
+        
+        email = data.get('email')
         password = data.get('password')
-        
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({'error': 'Username already exists'}, status=400)
-        
-        user = User.objects.create_user(username=username, password=password)
+        first_name = data.get('firstName')
+        last_name = data.get('lastName')
+        terms_accepted = data.get('termsAccepted')
+
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'Email already exists'}, status=400)
+
+        user = User.objects.create_user(
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            terms_accepted=terms_accepted
+        )
+
         return JsonResponse({'message': 'User registered successfully'})
 
 # Login User and get JWT tokens
@@ -27,10 +41,10 @@ def register(request):
 def login(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        username = data.get('username')
+        email = data.get('email')
         password = data.get('password')
         
-        user = User.objects.filter(username=username).first()
+        user = User.objects.filter(email=email).first()
         if user and user.check_password(password):
             refresh = RefreshToken.for_user(user)
             return JsonResponse({
@@ -39,41 +53,58 @@ def login(request):
             })
         return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
-# Protected Route
-@api_view(['GET'])
+
+@api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
-def protected_view(request):
-    return JsonResponse({'message': f'Hello {request.user.username}, you accessed a protected route!'})
-
-# MariaDB Database Read/Update
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def mariadb_data(request):
-    with connection.cursor() as cursor:
-        if request.method == 'GET':
-            cursor.execute("SELECT id, username FROM auth_user")
-            rows = cursor.fetchall()
-            return JsonResponse({'data': rows})
-        
-        elif request.method == 'POST':
-            data = json.loads(request.body)
-            cursor.execute("UPDATE my_table SET value=%s WHERE id=%s", [data['value'], data['id']])
-            return JsonResponse({'message': 'Record updated'})
-
-
-
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def patients(request):
+def diagnoses(request):
     if request.method == 'GET':
-        patients = list(Patient.objects.values())  # Fetch all patients
-        return JsonResponse({'patients': patients})
+        # Fetch only diagnoses that belong to the authenticated user
+        diagnosis_list = list(Diagnosis.objects.filter(user=request.user).values())  
+        return JsonResponse({'Diagnosis': diagnosis_list})
     
     elif request.method == 'POST':
         data = json.loads(request.body)
-        patient = Patient.objects.create(
-            name=data['name'],
-            age=data['age'],
-            diabetes_type=data['diabetes_type']
+
+        # Extract input data
+        pregancies = data.get('pregancies', 0)
+        glucose = data.get('glucose', 0.0)
+        blood_pressure = data.get('blood_pressure', 0.0)
+        skin_thickness = data.get('skin_thickness', 0.0)
+        insulin = data.get('insulin', 0.0)
+        bmi = data.get('bmi', 0.0)
+        diabetes_pedigree_function = data.get('diabetes_pedigree_function', 0.0)
+        age = data.get('age', 0)
+
+    
+        prediction_value = predict_diabetes(pregancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age)
+        
+        diagnosis = Diagnosis.objects.create(
+            user=request.user,
+            pregancies=pregancies,
+            glucose=glucose,
+            blood_pressure=blood_pressure,
+            skin_thickness=skin_thickness,
+            insulin=insulin,
+            bmi=bmi,
+            diabetes_pedigree_function=diabetes_pedigree_function,
+            age=age,
+            has_diabetes=prediction_value > 0.5  # Example threshold (adjust as needed)
         )
-        return JsonResponse({'message': 'Patient added successfully', 'id': patient.id})
+
+        return JsonResponse({
+            'message': 'Diagnosis added successfully',
+            'id': diagnosis.id,
+            'prediction': prediction_value
+        })
+    
+    elif request.method == 'DELETE':
+        data = json.loads(request.body)
+        diagnosis_id = data.get('id')
+        
+        try:
+            # Ensure the user can only delete their own diagnoses
+            diagnosis = Diagnosis.objects.get(id=diagnosis_id, user=request.user)
+            diagnosis.delete()
+            return JsonResponse({'message': 'Diagnosis deleted successfully'})
+        except Diagnosis.DoesNotExist:
+            return JsonResponse({'error': 'Diagnosis not found or unauthorized'}, status=404)
