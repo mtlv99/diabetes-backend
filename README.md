@@ -12,7 +12,7 @@ Download Python version 3.10 before continuing.
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows use: venv\Scripts\activate
+source venv/bin/activate  # On Windows use: .\venv\Scripts\activate
 ```
 
 ### 2. Install dependencies
@@ -55,5 +55,5 @@ python manage.py runserver
 ### Exit the virtual environment
 
 ```bash
-deactivate  # On Windows use: venv\Scripts\deactivate
+deactivate  # On Windows use: .\venv\Scripts\deactivate
 ```

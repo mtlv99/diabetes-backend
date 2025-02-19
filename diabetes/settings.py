@@ -14,6 +14,7 @@ from pathlib import Path
 import MySQLdb
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Load environment variables from .env
 load_dotenv()
@@ -45,10 +46,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'corsheaders',
     "diabetes",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -84,6 +87,15 @@ TEMPLATES = [
         },
     },
 ]
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # Default is 5 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # Default is 1 day
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+}
+
 
 WSGI_APPLICATION = "diabetes.wsgi.application"
 
@@ -175,3 +187,6 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Allow all origins for CORS
+CORS_ALLOW_ALL_ORIGINS = True
