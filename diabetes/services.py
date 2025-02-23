@@ -4,9 +4,9 @@
 
 # model = load_model("my_model.h5")
 
-def predict_diabetes(pregancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age):
+def predict_diabetes(pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age):
 
-    # input_data = np.array([[pregancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age]])
+    # input_data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age]])
     # prediction = model.predict(input_data)
     
     # return float(prediction[0][0])  # Convert NumPy float to standard float

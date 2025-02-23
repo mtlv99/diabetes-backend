@@ -16,13 +16,12 @@ Including another URLconf
 """
 
 from django.urls import path
-from .views import register, login
+from .views import register, login, diagnoses, CustomTokenRefreshView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import diagnoses
 
 urlpatterns = [
     path('register/', register),
     path('login/', login),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('diagnoses/', diagnoses),
 ]

@@ -46,7 +46,7 @@ class User(AbstractUser):
 
 class Diagnosis(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    pregancies = models.IntegerField()
+    pregnancies = models.IntegerField()
     glucose = models.FloatField()
     blood_pressure = models.FloatField()
     skin_thickness = models.FloatField()

@@ -51,7 +51,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{ \"email\": \"example@example.com\", \"password\": \"1234\" }",
+					"raw": "{ \"email\": \"a@a.com\", \"password\": \"1234\" }",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -70,6 +70,39 @@
 					"port": "8000",
 					"path": [
 						"login",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Refresh token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0MDg5MzMwNSwiaWF0IjoxNzQwMjg4NTA1LCJqdGkiOiI3YjQ4NDgwYzI0NjI0ZTJmOWJiZTM1ODExNjQ0YjYxZSIsInVzZXJfaWQiOjF9.YUOJ67IaF5DbJ4upodG5v-UAbghD0Q9I5almaqwxj7Q\" }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/token/refresh/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"token",
+						"refresh",
 						""
 					]
 				}
@@ -181,7 +214,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM5ODYxMDAxLCJpYXQiOjE3Mzk4NjA3MDEsImp0aSI6IjZhNmY0YWI1OTMwNjQ2OTJhMTZkYjJiZWM3Mzk3NTY1IiwidXNlcl9pZCI6MX0.iYi1POP3Ids-cCfb1r_EoLYSTOjJOF_b0xrva-pmYfU",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwMzA1Mzk3LCJpYXQiOjE3NDAzMDM1OTcsImp0aSI6IjE1M2ZjMjFlOTYzZjQyOGU4OTdiM2IzNDlmYmExODk0IiwidXNlcl9pZCI6MX0.P59jOsJlo7kMw_sPG8Jw8bzvEo8c237gN5NdHUOfqwA",
 				"type": "string"
 			}
 		]

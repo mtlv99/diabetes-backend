@@ -8,6 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 from .models import Diagnosis
 from .services import predict_diabetes  # Import the business logic function
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.tokens import AccessToken
 
 User = get_user_model()  # Use the custom user model
 
@@ -35,7 +37,7 @@ def register(request):
             terms_accepted=terms_accepted
         )
 
-        return JsonResponse({'message': 'User registered successfully'})
+        return JsonResponse({'message': 'User registered successfully', 'success': True })
 
 # Login User and get JWT tokens
 @csrf_exempt
@@ -49,8 +51,11 @@ def login(request):
         if user and user.check_password(password):
             refresh = RefreshToken.for_user(user)
             return JsonResponse({
+                'uid': user.id,
+                'name': user.first_name + ' ' + user.last_name,
+                'email': user.email,
                 'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                'token': str(refresh.access_token)
             })
         return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
@@ -67,7 +72,7 @@ def diagnoses(request):
         data = json.loads(request.body)
 
         # Extract input data
-        pregancies = data.get('pregancies', 0)
+        pregnancies = data.get('pregnancies', 0)
         glucose = data.get('glucose', 0.0)
         blood_pressure = data.get('blood_pressure', 0.0)
         skin_thickness = data.get('skin_thickness', 0.0)
@@ -77,12 +82,12 @@ def diagnoses(request):
         age = data.get('age', 0)
 
     
-        prediction_value = predict_diabetes(pregancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age)
+        prediction_value = predict_diabetes(pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age)
         has_diabetes = prediction_value > 0.5
 
         diagnosis = Diagnosis.objects.create(
             user=request.user,
-            pregancies=pregancies,
+            pregnancies=pregnancies,
             glucose=glucose,
             blood_pressure=blood_pressure,
             skin_thickness=skin_thickness,
@@ -96,6 +101,8 @@ def diagnoses(request):
         return JsonResponse({
             'message': 'Diagnosis added successfully',
             'id': diagnosis.id,
+            'user_id': diagnosis.user.id,
+            'created': diagnosis.created,
             'prediction': prediction_value,
             'has_diabetes': has_diabetes
         })
@@ -111,3 +118,31 @@ def diagnoses(request):
             return JsonResponse({'message': 'Diagnosis deleted successfully', 'diagnosis_id': diagnosis_id})
         except Diagnosis.DoesNotExist:
             return JsonResponse({'error': 'Diagnosis not found or unauthorized'}, status=404)
+        
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)  # Call the default refresh logic
+
+        # If a new access token was issued, get user data
+        if "access" in response.data:
+            access_token = response.data["access"]
+            user_id = self.get_user_id_from_token(access_token)
+
+            if user_id:
+                user = User.objects.get(id=user_id)
+                response.data.update({
+                    "uid": user.id,
+                    "name": user.first_name + ' ' + user.last_name,
+                    "email": user.email     
+                })
+
+        return response
+
+    def get_user_id_from_token(self, token):
+        """Extracts user ID from the given JWT access token."""
+        try:
+            decoded_token = AccessToken(token)
+            return decoded_token["user_id"]
+        except Exception:
+            return None
