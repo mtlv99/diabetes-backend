@@ -4,6 +4,14 @@ Authors:
 - Marco León Vargas
 - Dwight García Esquivel
 
+# Technologies used
+- **Language**: Python 3.10
+- **Web Framework**: Django
+- **Data Analysis**: pandas
+- **Machine Learning**: scikit-learn (sklearn)
+- **Data Visualization**: seaborn, matplotlib
+- **Database**: MariaDB
+
 ## Installation
 
 Download Python version 3.10 before continuing.
