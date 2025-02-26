@@ -5,7 +5,7 @@ import os
 import sklearn
 
 # Print sklearn version for debugging
-print(sklearn.__version__)
+print("SKLearn:", sklearn.__version__)
 
 # Define relative path to the model
 modelo_path = os.path.join(os.path.dirname(__file__), "..", "Analisis&Modelos", "modelo_rf.pkl")
