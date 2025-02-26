@@ -1,5 +1,7 @@
 # Diabetes Prediction - Backend
 
+Backend for diabetes prediction. You can find the frontend [here](https://github.com/mtlv99/diabetes-app).
+
 Authors:
 - Marco León Vargas
 - Dwight García Esquivel
