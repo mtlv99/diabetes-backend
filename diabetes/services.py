@@ -8,7 +8,7 @@ import sklearn
 print("SKLearn:", sklearn.__version__)
 
 # Define relative path to the model
-modelo_path = os.path.join(os.path.dirname(__file__), "..", "Analisis&Modelos", "modelo_rf.pkl")
+modelo_path = os.path.join(os.path.dirname(__file__), "..", "Analisis&Modelos", "modelo_rl.pkl")
 
 # Load model with error handling
 try:
@@ -19,7 +19,6 @@ except Exception as e:
     modelo = None
 
 FEATURE_NAME_MAPPING = {
-    "pregnancies": "Pregnancies",
     "glucose": "Glucose",
     "blood_pressure": "BloodPressure",
     "skin_thickness": "SkinThickness",
@@ -37,7 +36,7 @@ def predict_diabetes(pregnancies, glucose, blood_pressure, skin_thickness, insul
     try:
         # Create a DataFrame with correct feature names
         input_data = pd.DataFrame([[
-            pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age
+            glucose, blood_pressure, skin_thickness, insulin, bmi, diabetes_pedigree_function, age
         ]], columns=FEATURE_NAME_MAPPING.keys())
 
         # Rename columns to match the trained model's feature names
